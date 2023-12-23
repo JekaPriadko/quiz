@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  mongodb:
+    extends:
+      file: docker-compose-db.yml
+      service: mongodb
+    networks:
+      - app-network
+
+  server:
+    container_name: server
+    depends_on:
+      - mongodb
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./server:/var/www/html/app/server/
+      - /var/www/html/app/server/node_modules/
+    environment:
+      - APP_PORT=3000
+      - MONGODB_HOST=mongodb
+    networks:
+      - app-network
+
+  # client:
+  #   build:
+  #     context: ./client
+  #     dockerfile: Dockerfile
+  #   container_name: client
+  #   volumes:
+  #     - ./client:/var/www/html/app/client/
+  #     - /var/www/html/app/client/node_modules/
+  #   ports:
+  #     - '5173:5173'
+  #   restart: always
+
+volumes:
+  server:
+  # client:
+
+networks:
+  app-network:
+    driver: bridge
